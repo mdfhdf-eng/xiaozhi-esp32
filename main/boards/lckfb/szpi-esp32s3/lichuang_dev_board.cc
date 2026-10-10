@@ -1,5 +1,5 @@
 #include "wifi_board.h"
-#include "codecs/box_audio_codec.h"
+#include "codecs/no_audio_codec.h"
 #include "display/oled_display.h"
 #include "application.h"
 #include "button.h"
@@ -28,28 +28,7 @@ public:
     }
 };
 
-class CustomAudioCodec : public BoxAudioCodec {
-private:
-    Pca9557* pca9557_;
-public:
-    CustomAudioCodec(i2c_master_bus_handle_t i2c_bus, Pca9557* pca9557)
-        : BoxAudioCodec(i2c_bus, AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-                        AUDIO_I2S_GPIO_MCLK, AUDIO_I2S_GPIO_BCLK, AUDIO_I2S_GPIO_WS,
-                        AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN, GPIO_NUM_NC,
-                        AUDIO_CODEC_ES8311_ADDR, AUDIO_CODEC_ES7210_ADDR, AUDIO_INPUT_REFERENCE,
-                        28.0f,  // Physical MIC1 gain
-                        2,      // Physical MIC3 is the playback reference input
-                        0.0f),
-          pca9557_(pca9557) {}
-    virtual void EnableOutput(bool enable) override {
-        BoxAudioCodec::EnableOutput(enable);
-        if (enable) {
-            pca9557_->SetOutputState(1, 1);
-        } else {
-            pca9557_->SetOutputState(1, 0);
-        }
-    }
-};
+
 
 class LichuangDevBoard : public WifiBoard {
 private:
@@ -229,10 +208,9 @@ public:
         InitializeTools();
     }
 
-    virtual AudioCodec* GetAudioCodec() override {
-        static CustomAudioCodec audio_codec(
-            i2c_bus_, 
-            pca9557_);
+        virtual AudioCodec* GetAudioCodec() override {
+        static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
+            AUDIO_I2S_GPIO_BCLK, AUDIO_I2S_GPIO_WS, AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN);
         return &audio_codec;
     }
 
