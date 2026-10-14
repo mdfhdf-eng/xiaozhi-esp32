@@ -209,9 +209,7 @@ public:
     return true;
 }
 
-    }
-
-    virtual void SetPowerSaveLevel(PowerSaveLevel level) override {
+        virtual void SetPowerSaveLevel(PowerSaveLevel level) override {
         if (level != PowerSaveLevel::LOW_POWER) {
             power_save_timer_->WakeUp();
         }
