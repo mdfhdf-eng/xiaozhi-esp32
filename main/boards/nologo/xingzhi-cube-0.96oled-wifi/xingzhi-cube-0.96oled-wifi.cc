@@ -143,15 +143,7 @@ private:
         volume_up_button_.OnClick([this]() {
             power_save_timer_->WakeUp();
             auto codec = GetAudioCodec();
-            virtual AudioCodec* GetAudioCodec() override {
-    static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-        AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_DIN);
-    return &audio_codec;
-            }
-            codec->SetOutputVolume(volume);
-            GetDisplay()->ShowNotification(Lang::Strings::VOLUME + std::to_string(volume));
-        });
-
+           
         volume_up_button_.OnLongPress([this]() {
             power_save_timer_->WakeUp();
             GetAudioCodec()->SetOutputVolume(100);
@@ -194,10 +186,11 @@ public:
     }
 
     virtual AudioCodec* GetAudioCodec() override {
-        static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-            AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_SCK, AUDIO_I2S_MIC_GPIO_WS, AUDIO_I2S_MIC_GPIO_DIN);
-        return &audio_codec;
-    }
+    static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
+        AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_DIN);
+    return &audio_codec;
+}
+
 
     virtual Display* GetDisplay() override {
         return display_;
