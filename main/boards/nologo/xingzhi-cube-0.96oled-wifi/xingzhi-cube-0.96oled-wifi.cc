@@ -143,6 +143,8 @@ private:
         volume_up_button_.OnClick([this]() {
     power_save_timer_->WakeUp();
     auto codec = GetAudioCodec();
+            int volume = codec->OutputVolume() + 10;
+    if (volume > 100) volume = 100;
     codec->SetOutputVolume(volume);
     GetDisplay()->ShowNotification(Lang::Strings::VOLUME + std::to_string(volume));
 });
