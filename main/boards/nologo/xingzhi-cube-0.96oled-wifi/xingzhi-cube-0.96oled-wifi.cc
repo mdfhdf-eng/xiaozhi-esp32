@@ -10,7 +10,6 @@
 #include "power_save_timer.h"
 #include "../xingzhi-cube-1.54tft-wifi/power_manager.h"
 
-
 #include <driver/rtc_io.h>
 #include <esp_sleep.h>
 #include <esp_log.h>
@@ -58,9 +57,8 @@ private:
         power_save_timer_->OnShutdownRequest([this]() {
             ESP_LOGI(TAG, "Shutting down");
             rtc_gpio_set_level(GPIO_NUM_21, 0);
-            // 启用保持功能，确保睡眠期间电平不变
             rtc_gpio_hold_en(GPIO_NUM_21);
-            esp_lcd_panel_disp_on_off(panel_, false); //关闭显示
+            esp_lcd_panel_disp_on_off(panel_, false);
             esp_deep_sleep_start();
         });
         power_save_timer_->SetEnabled(true);
@@ -83,7 +81,6 @@ private:
     }
 
     void InitializeSsd1306Display() {
-        // SSD1306 config
         esp_lcd_panel_io_i2c_config_t io_config = {
             .dev_addr = 0x3C,
             .scl_speed_hz = 400 * 1000,
@@ -114,7 +111,6 @@ private:
         ESP_ERROR_CHECK(esp_lcd_new_panel_ssd1306(panel_io_, &panel_config, &panel_));
         ESP_LOGI(TAG, "SSD1306 driver installed");
 
-        // Reset the display
         ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_));
         if (esp_lcd_panel_init(panel_) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize display");
@@ -122,7 +118,6 @@ private:
             return;
         }
 
-        // Set the display to on
         ESP_LOGI(TAG, "Turning display on");
         ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, true));
 
@@ -141,25 +136,16 @@ private:
         });
 
         volume_up_button_.OnClick([this]() {
-    power_save_timer_->WakeUp();
-    auto codec = GetAudioCodec();
-            int volume = codec->OutputVolume() + 10;
-    if (volume > 100) volume = 100;
-    codec->SetOutputVolume(volume);
-    GetDisplay()->ShowNotification(Lang::Strings::VOLUME + std::to_string(volume));
-});
-           
+            power_save_timer_->WakeUp();
+            GetAudioCodec()->SetOutputVolume(50);
+            GetDisplay()->ShowNotification(Lang::Strings::MAX_VOLUME);
+        });
+
         volume_up_button_.OnLongPress([this]() {
             power_save_timer_->WakeUp();
             GetAudioCodec()->SetOutputVolume(100);
             GetDisplay()->ShowNotification(Lang::Strings::MAX_VOLUME);
         });
-
-        volume_up_button_.OnClick([this]() {
-    power_save_timer_->WakeUp();
-    GetAudioCodec()->SetOutputVolume(50);
-    GetDisplay()->ShowNotification(Lang::Strings::MAX_VOLUME);
-});
     }
 
 public:
@@ -180,24 +166,23 @@ public:
     }
 
     virtual AudioCodec* GetAudioCodec() override {
-    static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-        AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_DIN);
-    return &audio_codec;
-}
-
+        static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
+            AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_DIN);
+        return &audio_codec;
+    }
 
     virtual Display* GetDisplay() override {
         return display_;
     }
 
     virtual bool GetBatteryLevel(int& level, bool& charging, bool& discharging) override {
-    level = 100;
-    charging = false;
-    discharging = false;
-    return true;
-}
+        level = 100;
+        charging = false;
+        discharging = false;
+        return true;
+    }
 
-        virtual void SetPowerSaveLevel(PowerSaveLevel level) override {
+    virtual void SetPowerSaveLevel(PowerSaveLevel level) override {
         if (level != PowerSaveLevel::LOW_POWER) {
             power_save_timer_->WakeUp();
         }
