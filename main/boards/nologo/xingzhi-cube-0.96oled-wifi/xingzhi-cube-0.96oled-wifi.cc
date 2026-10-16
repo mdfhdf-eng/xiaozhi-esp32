@@ -158,6 +158,7 @@ public:
         InitializeDisplayI2c();
         InitializeSsd1306Display();
         InitializeButtons();
+        GetAudioCodec()->SetOutputVolume(80);
     }
 
     virtual Led* GetLed() override {
