@@ -5,9 +5,7 @@
     "builds": [
         {
             "name": "xingzhi-cube-0.96oled-wifi",
-            "sdkconfig_append": [
-                "CONFIG_USE_DEVICE_AEC=y"
-            ]
+            "sdkconfig_append": []
         }
     ]
 }
